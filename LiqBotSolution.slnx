@@ -1,0 +1,7 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/LiqBot.App/LiqBot.App.csproj" />
+    <Project Path="src/liqbot.config/liqbot.config.csproj" />
+    <Project Path="src/LiqBot.Logic/LiqBot.Logic.csproj" />
+  </Folder>
+</Solution>
