@@ -25,6 +25,12 @@ public class BotLogic
     {
         this.m_logger.LogInformation("Starting LiquidationBot...");
 
+        // jsonの絶対パスを構築
+        string payloadPath = Path.Combine(
+            AppContext.BaseDirectory,
+            "Payloads",
+            "hyperliquid_eth_l2.json"
+        );
         // 購読したいメッセージの準備
         string subscribePayload = "{}";
 
