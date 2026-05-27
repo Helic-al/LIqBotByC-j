@@ -10,6 +10,7 @@ public class BotLogic
     private readonly LiqBot.Logic.IWebSocketObserverFactory m_wsFactory;
     private readonly ILogger<BotLogic> m_logger;
 
+    #region コンストラクタ
     public BotLogic(
         IOptions<BotConfig> inOptions,
         IWebSocketObserverFactory inWsFactory,
@@ -20,6 +21,7 @@ public class BotLogic
         this.m_wsFactory = inWsFactory;
         this.m_logger = inLogger;
     }
+    #endregion
 
     public async Task RunAsync(CancellationToken ct)
     {
