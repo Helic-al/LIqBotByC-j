@@ -32,7 +32,7 @@ public class BotLogic
             "hyperliquid_eth_l2.json"
         );
         // 購読したいメッセージの準備
-        string subscribePayload = "{}";
+        string subscribePayload = File.ReadAllText(payloadPath);
 
         // factoryでインスタンス生成
         using var observer = this.m_wsFactory.CreateWebSocketObserver(
