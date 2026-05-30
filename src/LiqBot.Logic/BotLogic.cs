@@ -34,11 +34,11 @@ public class BotLogic
             "hyperliquid_eth_l2.json"
         );
         // 購読したいメッセージの準備
-        string subscribePayload = "{}";
+        string subscribePayload = await File.ReadAllTextAsync(payloadPath, ct) ;
 
         // factoryでインスタンス生成
         using var observer = this.m_wsFactory.CreateWebSocketObserver(
-            "wss://api.hyperliquid.xyz/ws",
+            this.m_config.infuraWssUrl,
             subscribePayload
         );
 
@@ -49,6 +49,12 @@ public class BotLogic
             this.m_logger.LogInformation(
                 $"データ受信: {json.Substring(0, Math.Min(json.Length, 100))}..."
             );
+        };
+
+        // 切断時のイベントハンドラを登録
+        observer.Disconnected += () =>
+        {
+            this.m_logger.LogWarning("WebSocket Disconnected.");
         };
 
         // 受信開始

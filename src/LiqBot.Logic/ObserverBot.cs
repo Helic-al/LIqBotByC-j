@@ -4,10 +4,13 @@ using Microsoft.Extensions.Logging;
 
 namespace LiqBot.Logic;
 
+#region websocketファクトリインターフェース 
 public interface IWebSocketObserverFactory
 {
     WebSocketObserver CreateWebSocketObserver(string inWssUrl, string inJsonPayload);
 }
+#endregion
+
 
 public class WebSocketObserverFactory : IWebSocketObserverFactory
 {
@@ -54,19 +57,33 @@ public class WebSocketObserver : IDisposable
     // runメソッド
     public async Task RunAsync(CancellationToken ct)
     {
-        try
+        while (!ct.IsCancellationRequested)
         {
-            await this.ConnectAsync(ct);
+            try
+            {
+                await this.ConnectAsync(ct);
 
-            await this.SubscribeAsync(ct);
+                await this.SubscribeAsync(ct);
 
-            await this.StartReceivingLoopAsync(ct);
-        }
-        catch (Exception ex) when (ex is not OperationCanceledException)
-        {
-            this.m_logger.LogWarning($"Disconnected. ReConnecting 3sec later");
-            // 切断されたことを外部に伝える
-            Disconnected?.Invoke();
+                await this.StartReceivingLoopAsync(ct);
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                this.m_logger.LogWarning($"Disconnected. ReConnecting 3sec later");
+                // 切断されたことを外部に伝える
+                Disconnected?.Invoke();
+
+                try
+                {
+                    await Task.Delay(3000, ct);
+
+                }
+                catch (OperationCanceledException)
+                {
+                    // タスクのキャンセルが要求された場合はループを抜ける
+                    break;
+                }
+            }
         }
     }
 
@@ -116,21 +133,19 @@ public class WebSocketObserver : IDisposable
     // 接続メソッド
     private async Task StartReceivingLoopAsync(CancellationToken ct)
     {
-        while (!ct.IsCancellationRequested)
+        // 接続試行
+        if (this.m_webSocket.State == WebSocketState.Open)
         {
-            // 接続試行
-            if (this.m_webSocket.State != WebSocketState.Open)
-            {
-                this.m_logger.LogInformation("Recieving Events...");
+            this.m_logger.LogInformation("Recieving Events...");
 
-                // 接続成功したら受信ループ開始
-                await ReceiveLoopAsync(ct);
-            }
-            else
-            {
-                this.m_logger.LogInformation("WebSocket Closed.");
-                Disconnected?.Invoke();
-            }
+            // 接続成功したら受信ループ開始
+            await ReceiveLoopAsync(ct);
+        }
+        else
+        {
+            this.m_logger.LogInformation("WebSocket Closed.");
+            Disconnected?.Invoke();
+
         }
     }
 
